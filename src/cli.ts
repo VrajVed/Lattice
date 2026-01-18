@@ -1,3 +1,44 @@
 #!/usr/bin/env bun
 
-console.log("lattice v0");
+import fs from "fs";
+import path from "path";
+import { createManifest } from "./manifest/create";
+import { file } from "bun";
+
+const args = process.argv.slice(2);
+
+if (args.length === 0 ) {
+    console.log("Usage:");
+    console.log("lattice create <file>");
+    process.exit(0);
+}
+
+const command = args[0];
+
+if (command === "create") {
+    const filePath = args[1];
+
+    if (!filePath) {
+        console.error("Error: Missing File Path");
+        console.error("Usage: lattice create <file>");
+        process.exit(1);
+    }
+
+    try {
+        const manifest = createManifest(filePath);
+        const outputPath = filePath + ".lattice";
+
+        fs.writeFileSync(outputPath, JSON.stringify(manifest, null, 2));
+
+        console.log(`Created ${path.basename(outputPath)}`);
+    } catch (error) {
+        console.error("Failed to create manifest.");
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
+    }
+
+    process.exit(0);
+}
+
+console.error(`Unknown command: ${command}`);
+process.exit(1);
