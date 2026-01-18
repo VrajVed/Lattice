@@ -1,0 +1,17 @@
+{
+  "name": "lattice",
+  "type": "module",
+  "bin": {
+    "lattice": "src/cli.ts"
+  },
+  "private": true,
+  "scripts": {
+    "start": "bun src/cli.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
