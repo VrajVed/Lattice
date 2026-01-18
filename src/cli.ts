@@ -3,10 +3,11 @@
 import fs from "fs";
 import path from "path";
 import { createManifest } from "./manifest/create";
-import { file } from "bun";
 
+// get arguments from command line
 const args = process.argv.slice(2);
 
+// simple help message
 if (args.length === 0 ) {
     console.log("Usage:");
     console.log("lattice create <file>");
@@ -15,7 +16,11 @@ if (args.length === 0 ) {
 
 const command = args[0];
 
+// handle 'create' command
+
 if (command === "create") {
+
+    // check for file path argument
     const filePath = args[1];
 
     if (!filePath) {
@@ -24,6 +29,7 @@ if (command === "create") {
         process.exit(1);
     }
 
+    // attempt to create manifest
     try {
         const manifest = createManifest(filePath);
         const outputPath = filePath + ".lattice";
