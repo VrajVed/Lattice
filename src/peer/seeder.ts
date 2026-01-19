@@ -12,21 +12,45 @@ export function startSeeder(
 
     const server = net.createServer(socket => {
         let buffer = "";
+        let streaming = false;
+
 
         socket.on("data", data => {
+
+            if (streaming) {
+                return;
+            }
+
             buffer += data.toString("utf8");
 
-            if (buffer.trim() === "GET") {
-                const stream = fs.createReadStream(filePath)
-                stream.pipe(socket);
+            let newlineIndex;
+            while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+                const line = buffer.slice(0, newlineIndex).trim();
+                buffer = buffer.slice(newlineIndex + 1);
 
-                stream.on("end", () => {
-                    socket.end();
-                });
+                if (line === "HELLO") {
+                    socket.write("OK\n");
+                }
 
-                stream.on("error", () => {
+                else if (line === "GET") {
+                    streaming = true;
+
+                    const stream = fs.createReadStream(filePath)
+                    stream.pipe(socket);
+
+                    stream.on("end", () => {
+                        socket.end();
+                    });
+
+                    stream.on("error", () => {
+                        socket.destroy();
+                    });
+                }
+
+                else {
                     socket.destroy();
-                });
+                    return;
+                }
             }
         });
 
