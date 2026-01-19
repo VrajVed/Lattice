@@ -1,6 +1,7 @@
 import net from "net";
 import fs from "fs";
 import path from "path";
+import { file } from "bun";
 
 export function downloadFromPeer(
     host: string,
@@ -8,14 +9,57 @@ export function downloadFromPeer(
     outputPath: string
 ) {
     return new Promise<void>((resolve, reject) => {
-        const socket = net.createConnection({host, port}, () => {
-            socket.write("GET\n");
-        });
+
+
+        const socket = net.createConnection({host, port});
 
         const fileStream = fs.createWriteStream(outputPath);
 
-        socket.on("data", chunk => {
-            fileStream.write(chunk);
+
+        let buffer = "";
+        let streaming = false;
+
+        socket.on("connect", () => {
+            socket.write("HELLO\n");
+        });
+        socket.on("data", data => {
+            if (!streaming) {
+                buffer += data.toString("utf8");
+
+                const newlineIndex = buffer.indexOf("\n");
+
+                if (newlineIndex === -1) {
+                    return;
+                }
+
+                const line = buffer.slice(0, newlineIndex).trim();
+                buffer = buffer.slice(newlineIndex + 1);
+
+                if (line !== "OK") {
+                    socket.destroy();
+                    fileStream.destroy();
+                    reject(new Error("Handshake failed"));
+                    return;
+                }
+                
+
+                // Handshake successful, request file
+
+                streaming = true;
+                socket.write("GET\n");
+
+                // If extra bytes are arrived after OK\n, then treat them as file data
+
+                if (buffer.length > 0) {
+                    fileStream.write(Buffer.from(buffer, "utf8"));
+                    buffer = "";
+                }
+
+                return;
+            }
+
+            fileStream.write(data);
+
         });
 
         socket.on("end", () => {
