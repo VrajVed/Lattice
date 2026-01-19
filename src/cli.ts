@@ -7,7 +7,7 @@ import { parseManifest } from "./manifest/parse";
 import { startSeeder } from "./peer/seeder";
 import { askYesNo } from "./security/yesNo";
 import { downloadFromPeer } from "./peer/downloader";
-
+import { hashFileSha256 } from "./security/hashFile";
 
 // get arguments from command line
 const args = process.argv.slice(2);
@@ -150,7 +150,18 @@ else if (command === "download") {
         await downloadFromPeer(host, port, outputPath);
 
         console.log("Download completed successfully.");
-        console.log("Scan the file before opening !");
+        console.log("Verifying file integrity...");
+
+        const actualHash = await hashFileSha256(outputPath);
+
+        if (actualHash !== manifest.fileHash) {
+            fs.unlinkSync(outputPath);
+            throw new Error("File integrity check failed (hash mismatch)");
+        }
+
+        console.log("Integrity verified.");
+
+        console.log("Scan the file before opening as it may contain malicious content !");
     } catch (error ) {
         console.error("Download failed:");
         console.error(error instanceof Error ? error.message : error);
