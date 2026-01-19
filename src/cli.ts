@@ -5,7 +5,7 @@ import path from "path";
 import { createManifest } from "./manifest/create";
 import { parseManifest } from "./manifest/parse";
 import { startSeeder } from "./peer/seeder";
-import { file } from "bun";
+import { downloadFromPeer } from "./peer/downloader";
 
 
 // get arguments from command line
@@ -52,7 +52,7 @@ if (command === "create") {
 
 /// this is the validation comomand
 
-if (command === "validate") {
+else if (command === "validate") {
     const filePath = args[1];
 
 
@@ -82,7 +82,7 @@ if (command === "validate") {
 
 }
 
-if (command === "seed") {
+else if (command === "seed") {
     const filePath = args[1];
     const portArg = args[2];
     
@@ -111,6 +111,37 @@ if (command === "seed") {
     process.stdin.resume();
     process.exitCode = 0;
 }
+
+else if (command === "download") {
+    const latticePath = args[1];
+
+    if (!latticePath) {
+        console.error("Usage: lattice download <file>.lattice");
+        process.exit(1);
+    }
+
+    try {
+        const manifest = parseManifest(latticePath);
+        const host = manifest.tracker.host;
+        const port = manifest.tracker.port;
+
+        const outputName = manifest.name;
+        const outputPath = path.resolve(process.cwd(), outputName);
+
+        console.log(`Connecting to seeder at ${host}:${port}...`);
+        console.log(`Downloading to ${outputName}...`);
+
+        await downloadFromPeer(host, port, outputPath);
+
+        console.log("Download completed successfully.");
+        console.log("⚠️ Scan file before opening !");
+    } catch (error ) {
+        console.error("Download failed:");
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
+    } 
+}
+
 
 else {
     console.error(`Unknown command: ${command}`);
