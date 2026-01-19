@@ -1,4 +1,4 @@
-import { parseManifest } from "./manifest/parse";
+import { parseManifest } from "../manifest/parse";
 
 try {
     const manifest = parseManifest("./test.txt.lattice");

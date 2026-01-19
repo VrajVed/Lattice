@@ -1,4 +1,4 @@
-import { createManifest } from "./manifest/create";
+import { createManifest } from "../manifest/create";
 
 const manifest = createManifest("./test.txt");
 
