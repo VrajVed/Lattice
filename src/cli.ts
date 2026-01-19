@@ -5,6 +5,7 @@ import path from "path";
 import { createManifest } from "./manifest/create";
 import { parseManifest } from "./manifest/parse";
 import { startSeeder } from "./peer/seeder";
+import { file } from "bun";
 
 
 // get arguments from command line
@@ -81,9 +82,37 @@ if (command === "validate") {
 
 }
 
+if (command === "seed") {
+    const filePath = args[1];
+    const portArg = args[2];
+    
+    if (!filePath) {
+        console.error("Usage: lattice seed <file> [port]");
+        process.exit(1);
+    }
+
+    const port = portArg ? Number(portArg) : 9000;
+
+    if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+        console.error("Error: Invalid port number");
+        process.exit(1);
+    }
 
 
+    try {
+        startSeeder(filePath, port ); 
+        console.log("Press Ctrl + C to stop seeding.");
+    } catch (error ) {
+        console.error("Failed to start seeder:");
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
+    }
 
+    process.stdin.resume();
+    process.exitCode = 0;
+}
 
-console.error(`Unknown command: ${command}`);
-process.exit(1);
+else {
+    console.error(`Unknown command: ${command}`);
+    process.exit(1);
+}
