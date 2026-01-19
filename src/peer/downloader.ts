@@ -1,12 +1,13 @@
 import net from "net";
 import fs from "fs";
 import path from "path";
-import { file } from "bun";
+import { renderProgress } from "./renderProgress";
 
 export function downloadFromPeer(
     host: string,
     port: number,
-    outputPath: string
+    outputPath: string,
+    expectedSize?: number
 ) {
     return new Promise<void>((resolve, reject) => {
 
@@ -15,7 +16,7 @@ export function downloadFromPeer(
 
         const fileStream = fs.createWriteStream(outputPath);
 
-
+        let recieved = 0;
         let buffer = "";
         let streaming = false;
 
@@ -58,12 +59,20 @@ export function downloadFromPeer(
                 return;
             }
 
+            recieved += data.length;
             fileStream.write(data);
+
+            if (expectedSize) {
+                renderProgress(recieved, expectedSize);
+            }
 
         });
 
         socket.on("end", () => {
             fileStream.end();
+            if (expectedSize) {
+                process.stdout.write("\n");
+            }
             resolve();
         });
 

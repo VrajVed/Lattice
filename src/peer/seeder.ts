@@ -14,7 +14,7 @@ export function startSeeder(
         let buffer = "";
         let streaming = false;
 
-
+        
         socket.on("data", data => {
 
             if (streaming) {
@@ -33,6 +33,8 @@ export function startSeeder(
                 }
 
                 else if (line === "GET") {
+                    console.log("Seeder: received GET, starting stream");
+
                     streaming = true;
 
                     const stream = fs.createReadStream(filePath)
