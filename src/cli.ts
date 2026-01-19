@@ -5,6 +5,7 @@ import path from "path";
 import { createManifest } from "./manifest/create";
 import { parseManifest } from "./manifest/parse";
 import { startSeeder } from "./peer/seeder";
+import { askYesNo } from "./security/yesNo";
 import { downloadFromPeer } from "./peer/downloader";
 
 
@@ -113,6 +114,7 @@ else if (command === "seed") {
 }
 
 else if (command === "download") {
+
     const latticePath = args[1];
 
     if (!latticePath) {
@@ -126,15 +128,29 @@ else if (command === "download") {
         const port = manifest.tracker.port;
 
         const outputName = manifest.name;
-        const outputPath = path.resolve(process.cwd(), outputName);
 
+        console.log("File: ", manifest.name);
+        console.log("Size: ", manifest.size, "bytes");
+        console.log("From: ", `${host}:${port}`);
+
+        console.log("Warning: Downloading files from untrusted sources can be dangerous.");
+        const consent = await askYesNo("Proceed with download? (y/n): ");
+
+        if (!consent) {
+            console.log("Aborted.");
+            process.exit(0);
+        }
+
+        const outputPath = path.resolve(process.cwd(), `Lattice_${outputName}`);
+
+        
         console.log(`Connecting to seeder at ${host}:${port}...`);
-        console.log(`Downloading to ${outputName}...`);
+        console.log(`Downloading to ${outputPath}...`);
 
         await downloadFromPeer(host, port, outputPath);
 
         console.log("Download completed successfully.");
-        console.log("⚠️ Scan file before opening !");
+        console.log("Scan the file before opening !");
     } catch (error ) {
         console.error("Download failed:");
         console.error(error instanceof Error ? error.message : error);

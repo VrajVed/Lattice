@@ -15,7 +15,7 @@ function sha256(data: Buffer): string {
 export function createManifest(
     filePath: string,
     trackerHost: string = "127.0.0.1",
-    trackerPort: number = 7000
+    trackerPort: number = 9000
 ) : LatticeManifest {
     
     const stat = fs.statSync(filePath); // get file stats
