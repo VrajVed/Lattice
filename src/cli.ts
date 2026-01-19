@@ -3,6 +3,9 @@
 import fs from "fs";
 import path from "path";
 import { createManifest } from "./manifest/create";
+import { parseManifest } from "./manifest/parse";
+import { startSeeder } from "./peer/seeder";
+
 
 // get arguments from command line
 const args = process.argv.slice(2);
@@ -45,6 +48,42 @@ if (command === "create") {
 
     process.exit(0);
 }
+
+/// this is the validation comomand
+
+if (command === "validate") {
+    const filePath = args[1];
+
+
+    if (!filePath) {
+        console.error("Error: Mising File Path");
+        console.error("Usage: lattice validate <file>.lattice");
+        process.exit(1);
+    }
+
+    try {
+        const manifest = parseManifest(filePath);
+
+        console.log("Manifest is valid:");
+        console.log(`Name: ${manifest.name}`);
+        console.log(`Size: ${manifest.size} bytes`);
+        console.log(`Chunks: ${manifest.chunks.length}`);
+        console.log(`Tracker: ${manifest.tracker.host}:${manifest.tracker.port}`);
+
+
+        process.exit(0);
+    
+    } catch (error ) {
+        console.error("Invalid manifest:");
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
+    }
+
+}
+
+
+
+
 
 console.error(`Unknown command: ${command}`);
 process.exit(1);
