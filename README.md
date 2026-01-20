@@ -21,3 +21,10 @@ lattice create bigfile.bin
 lattice seed bigfile.bin
 lattice validate bigfile.bin.lattice
 lattice download bigfile.bin.lattice
+```
+
+## License
+
+This project is proprietary and closed-source.
+All rights reserved.
+
