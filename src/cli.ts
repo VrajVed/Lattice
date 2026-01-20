@@ -36,7 +36,7 @@ if (command === "create") {
 
     // attempt to create manifest
     try {
-        const manifest = createManifest(filePath);
+        const manifest = await createManifest(filePath);
         const outputPath = filePath + ".lattice";
 
         fs.writeFileSync(outputPath, JSON.stringify(manifest, null, 2));

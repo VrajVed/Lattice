@@ -12,11 +12,11 @@ function sha256(data: Buffer): string {
 }
 
 // creates our manifest
-export function createManifest(
+export async function createManifest(
     filePath: string,
     trackerHost: string = "127.0.0.1",
     trackerPort: number = 9000
-) : LatticeManifest {
+) : Promise<LatticeManifest> {
     
     const stat = fs.statSync(filePath); // get file stats
 
@@ -24,29 +24,53 @@ export function createManifest(
         throw new Error("Provided Path isn't a file.");
     }
 
-    const fileBuffer = fs.readFileSync(filePath); // read the entire file
-
     const chunks: string[] = []; // to hold chunk hashes
+    const fileHasher = crypto.createHash("sha256");
+
+    let buffer = Buffer.alloc(0);
+    const stream = fs.createReadStream(filePath);
 
     // splitting file into equal chunks and hashing each
 
-    for (let offset = 0; offset < fileBuffer.length; offset += CHUNK_SIZE) {
-        
-        const chunk = fileBuffer.subarray(offset, offset + CHUNK_SIZE);
-        const chunkHash = sha256(chunk);
-        chunks.push(`sha256:${chunkHash}`);
-    }
 
-    const fileHash = `sha256:${sha256(fileBuffer)}`; // hash of the entire file
+    await new Promise<void>((resolve, reject) => {
+        stream.on("data", data  => {
+
+            fileHasher.update(data);
+
+            const chunk = Buffer.isBuffer(data) ? data : Buffer.from(data);
+            buffer = Buffer.concat([buffer, chunk]);
+
+
+            while (buffer.length >= CHUNK_SIZE) {
+                const chunk = buffer.subarray(0, CHUNK_SIZE);
+                buffer = buffer.subarray(CHUNK_SIZE);
+
+                chunks.push(`sha256:${sha256(chunk)}`);
+            }
+        });
+
+        stream.on("end", () => {
+            // remaining partial chunk
+            if (buffer.length > 0) {
+                chunks.push(`sha256:${sha256(buffer)}`);
+            }
+            resolve();
+        });
+
+        stream.on("error", err => {
+            reject(err);
+        });
+    });
 
     // constructing the manifest object
 
     const manifest: LatticeManifest = {
         version: 1,
         name: path.basename(filePath),
-        size: fileBuffer.length,
+        size: stat.size,
         chunkSize: CHUNK_SIZE,
-        fileHash,
+        fileHash: `sha256:${fileHasher.digest("hex")}`,
         chunks,
         tracker: {
             host: trackerHost,
