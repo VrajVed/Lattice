@@ -1,7 +1,7 @@
 import net from "net";
 import fs from "fs";
 import path from "path";
-import { renderProgress } from "./renderProgress";
+import { renderProgress } from "../renderProgress";
 
 export function downloadFromPeer(
     host: string,

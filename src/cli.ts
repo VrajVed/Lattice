@@ -41,7 +41,7 @@ if (command === "create") {
 
         fs.writeFileSync(outputPath, JSON.stringify(manifest, null, 2));
 
-        console.log(`Created ${path.basename(outputPath)}`);
+        console.log(`\nCreated ${path.basename(outputPath)}`);
     } catch (error) {
         console.error("Failed to create manifest.");
         console.error(error instanceof Error ? error.message : error);

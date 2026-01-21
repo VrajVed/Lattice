@@ -2,6 +2,7 @@ import type { LatticeManifest } from "./types";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import {renderProgress} from "../renderProgress.js";
 
 // here we are defining the chunk size
 const CHUNK_SIZE = 256 * 1024; // 256 KB 
@@ -35,7 +36,7 @@ export async function createManifest(
 
     await new Promise<void>((resolve, reject) => {
         stream.on("data", data  => {
-
+            renderProgress(stream.bytesRead, stat.size);
             fileHasher.update(data);
 
             const chunk = Buffer.isBuffer(data) ? data : Buffer.from(data);
