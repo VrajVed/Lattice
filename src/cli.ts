@@ -147,7 +147,11 @@ else if (command === "download") {
         console.log(`Connecting to seeder at ${host}:${port}...`);
         console.log(`Downloading to ${outputPath}...`);
 
-        await downloadFromPeer(host, port, outputPath, manifest.size);
+        await downloadFromPeer(host, port, outputPath,{
+            fileHash: manifest.fileHash,
+            chunks: manifest.chunks,
+            size: manifest.size
+        });
 
         console.log("Download completed successfully.");
         console.log("Verifying file integrity...");

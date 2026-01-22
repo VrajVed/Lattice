@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "name": "test.txt",
+  "size": 13,
+  "chunkSize": 262144,
+  "fileHash": "sha256:c6251717009947b36805cca02562a501e24454af74a8958f1a8a68150a02724b",
+  "chunks": [
+    "sha256:c6251717009947b36805cca02562a501e24454af74a8958f1a8a68150a02724b"
+  ],
+  "tracker": {
+    "host": "127.0.0.1",
+    "port": 9000
+  }
+}

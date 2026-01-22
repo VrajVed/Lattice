@@ -10,3 +10,10 @@ export interface LatticeManifest {
         port: number
     }
 }
+
+export interface DownloadState {
+    fileHash: string;
+    chunkSize: number;
+    totalChunks: number;
+    completed: number[];
+}
