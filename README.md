@@ -1,6 +1,6 @@
 # Lattice
 
-Lattice is a secure CLI-based file sharing system inspired by BitTorrent.
+Lattice is a CLI-based file sharing system inspired by BitTorrent.
 
 It converts large files into compact metadata files (`.lattice`) that can be shared privately,
 allowing files to be streamed, verified, and downloaded safely.
