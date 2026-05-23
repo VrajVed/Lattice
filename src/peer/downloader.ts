@@ -1,11 +1,9 @@
 import net from "net";
 import fs from "fs";
-import path from "path";
 import crypto from "crypto";
 import { renderProgress } from "../renderProgress";
 import { loadState, saveState } from "../storage/downloadState";
 import type { DownloadState } from "../manifest/types";
-import { request } from "http";
 
 const CHUNK_SIZE = 256 * 1024; // 256 KB
 
@@ -66,16 +64,22 @@ export function downloadFromPeer(
                     }
 
 
-                    const header = JSON.parse(line);
-                    if (header.type !== "data") {
+                    try {
+                            const header = JSON.parse(line);
+                        if (header.type !== "data") {
+                            reject(new Error("Invalid Response"));
+                            socket.destroy();
+                            return;
+                        }
+
+                        currentChunkIndex = header.chunk;
+                        expectedBytes = header.size;
+                        awaitingChunkHeader = false;
+                    } catch (err) {
                         reject(new Error("Invalid Response"));
                         socket.destroy();
                         return;
                     }
-
-                    currentChunkIndex = header.chunk;
-                    expectedBytes = header.size;
-                    awaitingChunkHeader = false;
                 }
 
                 if (buffer.length < expectedBytes) {
@@ -135,8 +139,12 @@ export function downloadFromPeer(
             }
 
             function findNextMissingChunk(): number | null {
+
+                const set = new Set(downloadState.completed);
+
+
                 for(let i = 0 ; i < totalChunks; i++) {
-                    if (!downloadState.completed.includes(i)) {
+                    if (!set.has(i)) {
                         return i;
                     }
                 }
